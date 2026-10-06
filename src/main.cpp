@@ -85,6 +85,14 @@ int main()
 			cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			getline(cin, name);
 
+			cout << "Enter Student Email: ";
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			getline(cin, email);
+
+			cout << "Enter Student Major: ";
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			getline(cin, major);
+
 			cout << "Enter Student ID: ";
 			while (!(cin >> id))
 			{
@@ -96,7 +104,7 @@ int main()
 			// Check for existing ID
 			for (size_t i = 0; i < students.size(); i++)
 			{
-				if (students[i].getId() == id)
+				if (students[i] == id)
 				{
 					idCheck = true;
 					break;
