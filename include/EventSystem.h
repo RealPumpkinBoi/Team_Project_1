@@ -17,6 +17,10 @@ public:
                      const std::string& registrationDate);
 
     bool cancelRegistration(Student* student, Event* event);
+
+    std::vector<Event*> getEventsForStudent(Student* student) const;
+
+    std::vector<Student*> getStudentsForEvent(Event* event) const;
 };
 
 #endif

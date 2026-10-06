@@ -70,3 +70,27 @@ bool EventSystem::cancelRegistration(Student* student, Event* event) {
 
     return false;
 }
+
+std::vector<Event*> EventSystem::getEventsForStudent(Student* student) const {
+    std::vector<Event*> events;
+
+    for (const Registration& registration : registrations) {
+        if (registration.getStudent() == student &&
+            registration.getStatus() == "Active") {
+            events.push_back(registration.getEvent());
+        }
+    }
+    return events;
+}
+
+std::vector<Student*> EventSystem::getStudentsForEvent(Event* event) const {
+    std::vector<Student*> students;
+
+    for (const Registration& registration : registrations) {
+        if (registration.getEvent() == event &&
+            registration.getStatus() == "Active") {
+            students.push_back(registration.getStudent());
+        }
+    }
+    return students;
+}
