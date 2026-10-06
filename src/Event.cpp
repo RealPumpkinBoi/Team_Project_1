@@ -23,10 +23,6 @@ int Event::getEventId() const {
 int Event::getCapacity() const {
     return capacity;
 }
-int Event::getRegisteredCount() const
-{
-    return registeredCount;
-}
 
 std::string Event::getName() const
 {

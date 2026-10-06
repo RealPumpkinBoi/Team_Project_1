@@ -11,7 +11,6 @@ private:
 	/*********************************************************
 	 * eventId 	-------- Event's ID # ----------------- Int
 	 * capacity -------- Event's capacity ------------- Int
-	 * registeredCount - # of registrations for event - Int
 	 * name ------------ Event Name ------------------- string
 	 * description ----- Event's description ---------- string
 	 * date ------------ Event's meeting Date --------- string
@@ -20,7 +19,6 @@ private:
 	 **********************************************************/
     int eventId;
     int capacity;
-    int registeredCount;
     std::string name;
     std::string description;
     std::string date;
@@ -41,7 +39,6 @@ public:
     //Setters can be implemented if advised
     int getEventId() const;
     int getCapacity() const;
-    int getRegisteredCount() const;
     std::string getName() const;
     std::string getDescription() const;
     std::string getDate() const;
