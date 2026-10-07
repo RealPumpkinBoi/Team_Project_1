@@ -1,35 +1,38 @@
 #ifndef ORGANIZER_H
 #define ORGANIZER_H
 
+#include <string>
+
 class Organizer 
 {
 private:
-    char organizerID[32];
-    char name[64];
-    char email[64];
-    char department[64];
+    std::string organizerID;
+    std::string name;
+    std::string email;
+    std::string department;
 
 public:
     Organizer();
-    Organizer(const char* id, const char* name, const char* email, const char* dept);
+    Organizer(const std::string& id, const std::string& name, 
+              const std::string& email, const std::string& department);
     ~Organizer();
 
     // Accessors
-    const char* getOrganizerID() const;
-    const char* getName() const;
-    const char* getEmail() const;
-    const char* getDepartment() const;
+    std::string getOrganizerID() const;
+    std::string getName() const;
+    std::string getEmail() const;
+    std::string getDepartment() const;
 
     // Mutators
-    void setOrganizerID(const char* id);
-    void setName(const char* name);
-    void setEmail(const char* email);
-    void setDepartment(const char* department);
+    void setOrganizerID(const std::string& id);
+    void setName(const std::string& name);
+    void setEmail(const std::string& email);
+    void setDepartment(const std::string& department);
 
-    // Display & Serialization
+    // Operations & Persistence
     void display() const;
-    void serialize(char* buffer, int bufferSize) const;
-    static Organizer deserialize(const char* line);
+    std::string serialize() const;
+    static Organizer deserialize(const std::string& line);
 };
 
-#endif // ORGANIZER_H
+#endif
