@@ -1,6 +1,8 @@
-#pragma once
+#ifndef ORGANIZER_H
+#define ORGANIZER_H
 
-class Organizer {
+class Organizer 
+{
 private:
     char organizerID[32];
     char name[64];
@@ -29,3 +31,5 @@ public:
     void serialize(char* buffer, int bufferSize) const;
     static Organizer deserialize(const char* line);
 };
+
+#endif // ORGANIZER_H
