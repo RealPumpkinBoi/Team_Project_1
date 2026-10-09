@@ -9,7 +9,7 @@ Event::Event(int id,
 		const std::string& t,
 		const std::string& loc)
 	//Constructor - Member initializer list
-    : eventId(id), capacity(cap), registeredCount(0), name(n),
+    : eventId(id), capacity(cap), name(n),
       description(desc), date(d), time(t), location(loc)
 {
 
