@@ -44,6 +44,10 @@ public:
     std::string getDate() const;
     std::string getTime() const;
     std::string getLocation() const;
+    virtual ~Event() = default;
+
+    virtual std::string getEventType() const;
+    virtual void displayDetails() const;
 
 };
 

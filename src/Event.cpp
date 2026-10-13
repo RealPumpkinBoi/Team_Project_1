@@ -1,4 +1,5 @@
 #include "../include/Event.h"
+#include <iostream>
 
 //Constructor
 Event::Event(int id,
@@ -47,4 +48,18 @@ std::string Event::getTime() const
 std::string Event::getLocation() const
 {
     return location;
+}
+std::string Event::getEventType() const {
+    return "General";
+}
+
+void Event::displayDetails() const {
+    std::cout << "Event ID: " << getEventId() << '\n'
+              << "Type: " << getEventType() << '\n'
+              << "Name: " << getName() << '\n'
+              << "Description: " << getDescription() << '\n'
+              << "Date: " << getDate() << '\n'
+              << "Time: " << getTime() << '\n'
+              << "Location: " << getLocation() << '\n'
+              << "Maximum capacity: " << getCapacity() << '\n';
 }
