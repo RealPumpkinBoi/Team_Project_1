@@ -1,6 +1,6 @@
 #include "Student.h"
 
-Student(const std::string& name, const std::string& email, const std::string& major, unsigned int id)
+Student::Student(const std::string& name, const std::string& email, const std::string& major, unsigned int id)
 {
 	studentName = name;
 	this->email = email;
@@ -16,7 +16,7 @@ std::string Student::getEmail() const
 {
 	return email;
 }
-std:string Student::getMajor() const
+std::string Student::getMajor() const
 {
 	return major;
 }
