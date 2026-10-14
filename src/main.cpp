@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <deque>
 #include <limits>
 #include <sstream>
 #include <memory>
@@ -292,10 +293,175 @@ bool searchEventsMenu(const EventManager& eventManager)
     return true;
 }
 
+Student* findStudentById(deque<Student>& students, int studentId)
+{
+    for (Student& student : students)
+    {
+        if (student.getId() == static_cast<unsigned int>(studentId))
+            return &student;
+    }
+
+    return nullptr;
+}
+
+bool registerStudentMenu(deque<Student>& students,
+                         EventManager& eventManager,
+                         EventSystem& eventSystem)
+{
+    int studentId;
+    int eventId;
+    string registrationDate;
+
+    cout << "\n=== Register Student for Event ===\n";
+
+    if (!readEventNumber("Enter Student ID: ", studentId))
+        return false;
+
+    Student* student = findStudentById(students, studentId);
+    if (student == nullptr)
+    {
+        cout << "Student with ID " << studentId << " not found.\n\n";
+        return true;
+    }
+
+    if (!readEventNumber("Enter Event ID: ", eventId))
+        return false;
+
+    Event* event = eventManager.findEventById(eventId);
+    if (event == nullptr)
+    {
+        cout << "Event with ID " << eventId << " not found.\n\n";
+        return true;
+    }
+
+    if (eventSystem.isAlreadyRegistered(student, event))
+    {
+        cout << student->getName() << " is already registered for "
+             << event->getName() << ".\n\n";
+        return true;
+    }
+
+    if (eventSystem.isEventFull(event))
+    {
+        cout << event->getName() << " is full.\n\n";
+        return true;
+    }
+
+    if (!readEventText("Enter Registration Date (YYYY-MM-DD): ", registrationDate))
+        return false;
+
+    eventSystem.registerStudent(student, event, registrationDate);
+
+    cout << "Registration successful!\n"
+         << "Student: " << student->getName() << '\n'
+         << "Event: " << event->getName() << "\n\n";
+
+    return true;
+}
+
+bool cancelRegistrationMenu(deque<Student>& students,
+                            EventManager& eventManager,
+                            EventSystem& eventSystem)
+{
+    int studentId;
+    int eventId;
+
+    cout << "\n=== Cancel Registration ===\n";
+
+    if (!readEventNumber("Enter Student ID: ", studentId))
+        return false;
+
+    if (!readEventNumber("Enter Event ID: ", eventId))
+        return false;
+
+    Student* student = findStudentById(students, studentId);
+    Event* event = eventManager.findEventById(eventId);
+
+    if (eventSystem.cancelRegistration(student, event))
+        cout << "Registration cancelled.\n\n";
+    else
+        cout << "No active registration found for that student and event.\n\n";
+
+    return true;
+}
+
+bool viewStudentRegistrationsMenu(deque<Student>& students,
+                                  EventSystem& eventSystem)
+{
+    int studentId;
+
+    cout << "\n=== View Student Registrations ===\n";
+
+    if (!readEventNumber("Enter Student ID: ", studentId))
+        return false;
+
+    Student* student = findStudentById(students, studentId);
+    if (student == nullptr)
+    {
+        cout << "Student with ID " << studentId << " not found.\n\n";
+        return true;
+    }
+
+    vector<Event*> events = eventSystem.getEventsForStudent(student);
+
+    cout << "Student: " << student->getName() << '\n'
+         << "Registered Events:\n";
+
+    if (events.empty())
+        cout << "(none)\n";
+
+    for (size_t i = 0; i < events.size(); i++)
+        cout << i + 1 << ". " << events[i]->getName() << '\n';
+
+    cout << '\n';
+    return true;
+}
+
+bool viewEventAttendeesMenu(EventManager& eventManager,
+                            EventSystem& eventSystem)
+{
+    int eventId;
+
+    cout << "\n=== View Event Attendees ===\n";
+
+    if (!readEventNumber("Enter Event ID: ", eventId))
+        return false;
+
+    Event* event = eventManager.findEventById(eventId);
+    if (event == nullptr)
+    {
+        cout << "Event with ID " << eventId << " not found.\n\n";
+        return true;
+    }
+
+    vector<Student*> attendees = eventSystem.getStudentsForEvent(event);
+
+    cout << "Event: " << event->getName() << '\n'
+         << "Registered: " << attendees.size()
+         << " / " << event->getCapacity() << '\n'
+         << "Registered Students:\n";
+
+    if (attendees.empty())
+        cout << "(none)\n";
+
+    for (size_t i = 0; i < attendees.size(); i++)
+        cout << i + 1 << ". " << attendees[i]->getName() << '\n';
+
+    cout << '\n';
+    return true;
+}
+
 int main()
 {
     // Keep the same event collection throughout the menu session.
     EventManager eventManager;
+    EventSystem eventSystem;
+
+    // deque keeps each Student at the same address when new ones are added,
+    // so the Student* pointers stored in registrations stay valid.
+    vector<Student> loadedStudents = loadStudentsFromFile("students.txt");
+    deque<Student> students(loadedStudents.begin(), loadedStudents.end());
+
     int choice = 12;
 
     while (choice != 0)
@@ -323,9 +489,6 @@ int main()
             string major;
             unsigned int id;
             bool idCheck = false;
-
-            vector<Student> students =
-                loadStudentsFromFile("students.txt");
 
             // Menu input has already consumed the newline.
             cout << "Enter Student Name: ";
@@ -378,6 +541,7 @@ int main()
                             << email << ":" << major << "\n";
 
                     outFile.close();
+                    students.emplace_back(name, email, major, id);
                     cout << "Student successfully added.\n\n";
                 }
                 else
@@ -474,19 +638,23 @@ int main()
         }
         else if (choice == 6)
         {
-            // Register Student for Event
+            if (!registerStudentMenu(students, eventManager, eventSystem))
+                return 0;
         }
         else if (choice == 7)
         {
-            // Cancel Registration
+            if (!cancelRegistrationMenu(students, eventManager, eventSystem))
+                return 0;
         }
         else if (choice == 8)
         {
-            // View Student Registrations
+            if (!viewStudentRegistrationsMenu(students, eventSystem))
+                return 0;
         }
         else if (choice == 9)
         {
-            // View Event Attendees
+            if (!viewEventAttendeesMenu(eventManager, eventSystem))
+                return 0;
         }
         else if (choice == 10)
         {
