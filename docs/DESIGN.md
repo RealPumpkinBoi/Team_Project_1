@@ -177,22 +177,3 @@ A shared format and centralized persistence strategy are needed to ensure that s
 | Pablo            | To be confirmed.                                                                                                                                     |
 | Morgan Saldana   | To be confirmed.                                                                                                                                     |
 | Caden            | Student model, student registration functionality, and initial main menu implementation.                                                             |
-
-Team responsibilities should be reviewed and updated to reflect the final merged contributions.
-
-## 10. Remaining Development Work
-
-The following work remains before final submission:
-
-- Connect event display and searching to the menu.
-- Integrate registration and cancellation menu operations.
-- Integrate registration and attendee views.
-- Complete organizer management.
-- Implement at least three reports.
-- Standardize and complete file persistence.
-- Improve input validation and error handling.
-- Complete and verify the UML class diagram.
-- Perform integrated application testing.
-- Prepare the final team demonstration.
-
-This documentation should be updated as functionality is completed to ensure that it accurately represents the submitted application.
