@@ -18,31 +18,6 @@
 using namespace std;
 
 // Helper Functions
-vector<Student> loadStudentsFromFile(const string& filename)
-{
-	vector<Student> students;
-	ifstream file(filename);
-	if (file.is_open())
-	{
-		string line;
-		while (getline(file, line))
-		{
-			if (line.empty()) continue;
-			size_t pos1 = line.find(':');
-			size_t pos2 = line.find(':', pos1 + 1);
-			size_t pos3 = line.find(':', pos2 + 1);
-			if (pos1 == string::npos || pos2 == string::npos || pos3 == string::npos)
-				continue; // Skip malformed lines
-			unsigned int id = static_cast<unsigned int>(stoul(line.substr(0, pos1)));
-			string name = line.substr(pos1 + 1, pos2 - pos1 - 1);
-			string email = line.substr(pos2 + 1, pos3 - pos2 - 1);
-			string major = line.substr(pos3 + 1);
-			students.emplace_back(name, email, major, id);
-		}
-		file.close();
-	}
-	return students;
-}
 
 
 int main()
@@ -79,7 +54,7 @@ int main()
 			string major;
 			unsigned int id;
 			bool idCheck = false;
-			vector<Student> students = loadStudentsFromFile("students.txt");
+			vector<Student> students = loadStudents("students.txt");
 
 			// Prompt for student data
 			cout << "Enter Student Name: ";
@@ -121,17 +96,13 @@ int main()
 					outFile.close();
 					cout << "Student successfully added.\n\n\n";
 				}
-				else
-				{
-					cout << "Error opening file for writing.\n\n\n";
-				}
 			}
 			
 		}
 		else if (choice == 2)
 		{
 			int viewChoice = 0;
-			vector<Student> students = loadStudentsFromFile("students.txt");
+			vector<Student> students = loadStudents("students.txt");
 			cout << "1. Find by ID\n"
 				<< "2. View All Students\n"
 				<< "Enter Selection: ";
