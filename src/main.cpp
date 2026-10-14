@@ -3,6 +3,9 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <sstream>
+#include <memory>
+#include <utility>
 
 #include "Student.h"
 #include "Registration.h"
@@ -14,343 +17,486 @@
 #include "ClubEvent.h"
 #include "CareerEvent.h"
 #include "AcademicEvent.h"
+#include "SocialEvent.h"
 
 using namespace std;
 
-// Helper Functions
 vector<Student> loadStudentsFromFile(const string& filename)
 {
-	vector<Student> students;
-	ifstream file(filename);
-	if (file.is_open())
-	{
-		string line;
-		while (getline(file, line))
-		{
-			if (line.empty()) continue;
-			size_t pos1 = line.find(':');
-			size_t pos2 = line.find(':', pos1 + 1);
-			size_t pos3 = line.find(':', pos2 + 1);
-			if (pos1 == string::npos || pos2 == string::npos || pos3 == string::npos)
-				continue; // Skip malformed lines
-			unsigned int id = static_cast<unsigned int>(stoul(line.substr(0, pos1)));
-			string name = line.substr(pos1 + 1, pos2 - pos1 - 1);
-			string email = line.substr(pos2 + 1, pos3 - pos2 - 1);
-			string major = line.substr(pos3 + 1);
-			students.emplace_back(name, email, major, id);
-		}
-		file.close();
-	}
-	return students;
+    vector<Student> students;
+    ifstream file(filename);
+
+    if (file.is_open())
+    {
+        string line;
+
+        while (getline(file, line))
+        {
+            if (line.empty())
+                continue;
+
+            size_t pos1 = line.find(':');
+            size_t pos2 = line.find(':', pos1 + 1);
+            size_t pos3 = line.find(':', pos2 + 1);
+
+            if (pos1 == string::npos ||
+                pos2 == string::npos ||
+                pos3 == string::npos)
+            {
+                continue;
+            }
+
+            unsigned int id =
+                static_cast<unsigned int>(stoul(line.substr(0, pos1)));
+
+            string name = line.substr(pos1 + 1, pos2 - pos1 - 1);
+            string email = line.substr(pos2 + 1, pos3 - pos2 - 1);
+            string major = line.substr(pos3 + 1);
+
+            students.emplace_back(name, email, major, id);
+        }
+    }
+
+    return students;
 }
 
+// Read an integer within an allowed range.
+// Rejects trailing text, overflow, and out-of-range values.
+bool readInteger(
+    const string& prompt,
+    int& value,
+    int minimum,
+    int maximum)
+{
+    string line;
+
+    while (true)
+    {
+        cout << prompt;
+
+        if (!getline(cin, line))
+            return false;
+
+        istringstream input(line);
+        int number;
+        char extra;
+
+        if ((input >> number) && !(input >> extra) &&
+            number >= minimum && number <= maximum)
+        {
+            value = number;
+            return true;
+        }
+
+        cout << "Please enter a whole number from "
+             << minimum << " to " << maximum << ".\n";
+    }
+}
+
+bool readEventNumber(const string& prompt, int& value)
+{
+    return readInteger(
+        prompt, value, 1, numeric_limits<int>::max());
+}
+
+bool readEventText(const string& prompt, string& value)
+{
+    while (true)
+    {
+        cout << prompt;
+
+        if (!getline(cin, value))
+            return false;
+
+        if (value.find_first_not_of(" \t\r\n") != string::npos)
+            return true;
+
+        cout << "This field cannot be blank.\n";
+    }
+}
+
+bool createEventMenu(EventManager& eventManager)
+{
+    int eventId;
+    int capacity;
+    int eventType;
+
+    string name;
+    string description;
+    string date;
+    string time;
+    string location;
+
+    cout << "\n=== Create Event ===\n";
+
+    // Collect the shared event information first.
+    if (!readEventNumber("Enter Event ID: ", eventId))
+        return false;
+
+    if (eventManager.findEventById(eventId) != nullptr)
+    {
+        cout << "That Event ID is already in use.\n\n";
+        return true;
+    }
+
+    if (!readEventNumber("Enter Event Capacity: ", capacity))
+        return false;
+
+    if (!readEventText("Enter Event Name: ", name))
+        return false;
+
+    if (!readEventText("Enter Event Description: ", description))
+        return false;
+
+    if (!readEventText("Enter Event Date (YYYY-MM-DD): ", date))
+        return false;
+
+    if (!readEventText("Enter Event Time (HH:MM): ", time))
+        return false;
+
+    if (!readEventText("Enter Event Location: ", location))
+        return false;
+
+    cout << "\nSelect Event Type:\n"
+         << "1. Academic Event\n"
+         << "2. Club Event\n"
+         << "3. Career Event\n"
+         << "4. Social Event\n";
+
+    if (!readInteger("Enter Selection: ", eventType, 1, 4))
+        return false;
+
+    unique_ptr<Event> newEvent;
+
+    if (eventType == 1)
+    {
+        string department;
+        string speaker;
+
+        if (!readEventText("Enter Department: ", department))
+            return false;
+
+        if (!readEventText("Enter Speaker: ", speaker))
+            return false;
+
+        newEvent = make_unique<AcademicEvent>(
+            eventId, capacity, name, description,
+            date, time, location, department, speaker);
+    }
+    else if (eventType == 2)
+    {
+        string clubName;
+
+        if (!readEventText("Enter Club Name: ", clubName))
+            return false;
+
+        newEvent = make_unique<ClubEvent>(
+            eventId, capacity, name, description,
+            date, time, location, clubName);
+    }
+    else if (eventType == 3)
+    {
+        string company;
+        string recruiter;
+
+        if (!readEventText("Enter Company Name: ", company))
+            return false;
+
+        if (!readEventText("Enter Recruiter Name: ", recruiter))
+            return false;
+
+        newEvent = make_unique<CareerEvent>(
+            eventId, capacity, name, description,
+            date, time, location, company, recruiter);
+    }
+    else
+    {
+        int foodInput;
+        string activity;
+
+        if (!readInteger(
+                "Is food provided? (1 for Yes, 0 for No): ",
+                foodInput, 0, 1))
+        {
+            return false;
+        }
+
+        if (!readEventText("Enter Main Activity: ", activity))
+            return false;
+
+        bool foodProvided = (foodInput == 1);
+
+        newEvent = make_unique<SocialEvent>(
+            eventId, capacity, name, description,
+            date, time, location, foodProvided, activity);
+    }
+
+    // Pass ownership to the shared event collection.
+    if (eventManager.addEvent(std::move(newEvent)))
+    {
+        cout << "Event successfully created and added!\n\n";
+    }
+    else
+    {
+        cout << "Failed to add event. An event with ID "
+             << eventId << " may already exist.\n\n";
+    }
+
+    return true;
+}
+
+bool viewEventsMenu(const EventManager& eventManager)
+{
+    int viewChoice;
+
+    cout << "\n=== View Events ===\n"
+         << "1. Find Event by ID\n"
+         << "2. View All Events\n";
+
+    if (!readInteger("Enter Selection: ", viewChoice, 1, 2))
+        return false;
+
+    if (viewChoice == 1)
+    {
+        int eventId;
+
+        if (!readEventNumber("Enter Event ID: ", eventId))
+            return false;
+
+        eventManager.displayEvent(eventId);
+    }
+    else
+    {
+        eventManager.displayAllEvents();
+    }
+
+    cout << '\n';
+    return true;
+}
+
+bool searchEventsMenu(const EventManager& eventManager)
+{
+    string keyword;
+
+    cout << "\n=== Search Events ===\n";
+
+    if (!readEventText(
+            "Enter all or part of an event name: ", keyword))
+    {
+        return false;
+    }
+
+    eventManager.searchEventsByName(keyword);
+    cout << '\n';
+
+    return true;
+}
 
 int main()
 {
-	//Create an instance of EventManager
-	EventManager eventManager;
+    // Keep the same event collection throughout the menu session.
+    EventManager eventManager;
+    int choice = 12;
 
-	int choice = 12;
-	while (choice > 0)
-	{
-		cout << "1. Add Student\n"
-			<< "2. View Students\n"
-			<< "3. Create Event\n"
-			<< "4. View Events\n"
-			<< "5. Search Events\n"
-			<< "6. Register Student for Event\n"
-			<< "7. Cancel Registration\n"
-			<< "8. View Student Registrations\n"
-			<< "9. View Event Attendees\n"
-			<< "10. View Organizers\n"
-			<< "11. System Reports\n"
-			<< "0. Exit\n\n"
-			<< "Enter Selection: ";
-		cin >> choice;
-		while (choice > 11 || choice < 0)
-		{
-			cout << "Invalid selection.\n\nEnter Selection: ";
-			cin >> choice;
-		}
-		if (choice == 1)
-		{
-			string name;
-			string email;
-			string major;
-			unsigned int id;
-			bool idCheck = false;
-			vector<Student> students = loadStudentsFromFile("students.txt");
+    while (choice != 0)
+    {
+        cout << "1. Add Student\n"
+             << "2. View Students\n"
+             << "3. Create Event\n"
+             << "4. View Events\n"
+             << "5. Search Events\n"
+             << "6. Register Student for Event\n"
+             << "7. Cancel Registration\n"
+             << "8. View Student Registrations\n"
+             << "9. View Event Attendees\n"
+             << "10. View Organizers\n"
+             << "11. System Reports\n"
+             << "0. Exit\n\n";
 
-			// Prompt for student data
-			cout << "Enter Student Name: ";
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			getline(cin, name);
+        if (!readInteger("Enter Selection: ", choice, 0, 11))
+            break;
 
-			cout << "Enter Student Email: ";
-			getline(cin, email);
+        if (choice == 1)
+        {
+            string name;
+            string email;
+            string major;
+            unsigned int id;
+            bool idCheck = false;
 
-			cout << "Enter Student Major: ";
-			getline(cin, major);
+            vector<Student> students =
+                loadStudentsFromFile("students.txt");
 
-			cout << "Enter Student ID: ";
-			while (!(cin >> id))
-			{
-				cout << "Invalid input. Please enter a valid Student ID: ";
-				cin.clear();
-			}
+            // Menu input has already consumed the newline.
+            cout << "Enter Student Name: ";
+            if (!getline(cin, name))
+                return 0;
 
-			// Check for existing ID
-			for (const auto& student : students)
-			{
-				if (student.getId() == id)
-				{
-					idCheck = true;
-					break;
-				}
-			}
-			if (idCheck)
-			{
-				cout << "That Student ID is already in use.\n\n\n";
-			}
-			else
-			{
-				ofstream outFile("students.txt", ios::app);
-				if (outFile.is_open())
-				{
-					outFile << id << ":" << name << ":" << email << ":" << major << "\n";
-					outFile.close();
-					cout << "Student successfully added.\n\n\n";
-				}
-				else
-				{
-					cout << "Error opening file for writing.\n\n\n";
-				}
-			}
-			
-		}
-		else if (choice == 2)
-		{
-			int viewChoice = 0;
-			vector<Student> students = loadStudentsFromFile("students.txt");
-			cout << "1. Find by ID\n"
-				<< "2. View All Students\n"
-				<< "Enter Selection: ";
-			cin >> viewChoice;
+            cout << "Enter Student Email: ";
+            if (!getline(cin, email))
+                return 0;
 
-			while (viewChoice > 2 || viewChoice < 1)
-			{
-				cout << "Invalid selection.\n\nEnter Selection: ";
-				cin >> viewChoice;
-			}
+            cout << "Enter Student Major: ";
+            if (!getline(cin, major))
+                return 0;
 
-			if (viewChoice == 1)
-			{
-				unsigned int searchId;
-				bool found = false;
-				cout << "Enter Student ID: ";
-				while (!(cin >> searchId))
-				{
-					cout << "Invalid input. Please enter a valid Student ID: ";
-					cin.clear();
-					cin.ignore(numeric_limits<streamsize>::max(), '\n');
-				}
-				for (const auto& student : students)
-				{
-					if (student.getId() == searchId)
-					{
-						cout << "Student Found:\n"
-							<< "ID: " << student.getId() << "\n"
-							<< "Name: " << student.getName() << "\n"
-							<< "Email: " << student.getEmail() << "\n"
-							<< "Major: " << student.getMajor() << "\n\n";
-						found = true;
-						break;
-					}
-				}
-				if (!found)
-				{
-					cout << "Student with ID " << searchId << " not found.\n\n";
-				}
-			}
+            cout << "Enter Student ID: ";
 
-			if (viewChoice == 2)
-			{
-				cout << "All Students:\n";
-				for (const auto& student : students)
-				{
-					cout << "ID: " << student.getId() << "\n"
-						<< "Name: " << student.getName() << "\n"
-						<< "Email: " << student.getEmail() << "\n"
-						<< "Major: " << student.getMajor() << "\n\n";
-				}
-				cout << "\n\n";
-			}
-		}
-		else if (choice == 3)
-		{
-			// Base Event variables
-			int eventId;
-			int	capacity;
-			string name;
-			string description;
-			string  date;
-			string time; 
-			string location;
+            while (!(cin >> id))
+            {
+                if (cin.eof())
+                    return 0;
 
-			cout << "Enter Event ID: ";
-			while (!(cin >> eventId))
-			{
-				cout << "Invalid input. Please enter a valid Event ID: ";
-				cin.clear();
-				cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			}
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-			cout << "Enter Event Capacity: ";
-			while (!(cin >> capacity))
-			{
-				cout << "Invalid input. Please enter a valid Capacity: ";
-				cin.clear();
-				cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			}
+                cout << "Invalid input. Please enter a valid Student ID: ";
+            }
 
-			// Clear buffer before reading strings
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-			cout << "Enter Event Name: ";
-			getline(cin, name);
+            for (const auto& student : students)
+            {
+                if (student.getId() == id)
+                {
+                    idCheck = true;
+                    break;
+                }
+            }
 
-			cout << "Enter Event Description: ";
-			getline(cin, description);
+            if (idCheck)
+            {
+                cout << "That Student ID is already in use.\n\n";
+            }
+            else
+            {
+                ofstream outFile("students.txt", ios::app);
 
-			cout << "Enter Event Date: ";
-			getline(cin, date);
+                if (outFile.is_open())
+                {
+                    outFile << id << ":" << name << ":"
+                            << email << ":" << major << "\n";
 
-			cout << "Enter Event Time: ";
-			getline(cin, time);
+                    outFile.close();
+                    cout << "Student successfully added.\n\n";
+                }
+                else
+                {
+                    cout << "Error opening file for writing.\n\n";
+                }
+            }
+        }
+        else if (choice == 2)
+        {
+            int viewChoice = 0;
 
-			cout << "Enter Event Location: ";
-			getline(cin, location);
+            vector<Student> students =
+                loadStudentsFromFile("students.txt");
 
-			/*With base information collected, now we can ask for the derived
-			class information based on the event type*/
+            cout << "1. Find by ID\n"
+                 << "2. View All Students\n";
 
-			// Determine Derived Event Type
-			int eventType = 0;
-			cout << "\nSelect Event Type:\n"
-				<< "1. Academic Event\n"
-				<< "2. Club Event\n"
-				<< "3. Career Event\n"
-				<< "4. Social Event\n"
-				<< "Enter Selection: ";
-			cin >> eventType;
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            if (!readInteger("Enter Selection: ", viewChoice, 1, 2))
+                return 0;
 
-			std::unique_ptr<Event> newEvent = nullptr;
+            if (viewChoice == 1)
+            {
+                unsigned int searchId;
+                bool found = false;
 
-			if (eventType == 1)
-			{
-				string department;
-				string speaker;
-				cout << "Enter Department: ";
-				getline(cin, department);
-				cout << "Enter Speaker: ";
-				getline(cin, speaker);
-				// Create AcademicEvent and assign to newEvent
-				newEvent = make_unique<AcademicEvent>(eventId, capacity, name, description, date, time, location, department, speaker);
-			}
-			else if (eventType == 2)
-			{
-				string clubName;
-				cout << "Enter Club Name: ";
-				getline(cin, clubName);
-				// Create ClubEvent and assign to newEvent
-				newEvent = make_unique<ClubEvent>(eventId, capacity, name, description, date, time, location, clubName);
-			}
-			else if (eventType == 3)
-			{
-				string company;
-				string recruiter;
-				cout << "Enter Company Name: ";
-				getline(cin, company);
-				cout << "Enter Recruiter Name: ";
-				getline(cin, recruiter);
-				// Create CareerEvent and assign to newEvent
-				newEvent = make_unique<CareerEvent>(eventId, capacity, name, description, date, time, location, company, recruiter);
-			}
-			else if (eventType == 4)
-			{
-				int foodInput;
-				bool foodProvided;
-				string activity;
+                cout << "Enter Student ID: ";
 
-				cout << "Is food provided? (1 for Yes, 0 for No): ";
-				while (!(cin >> foodInput) || (foodInput != 0 && foodInput != 1))
-				{
-					cout << "Invalid input. Please enter 1 for Yes or 0 for No: ";
-					cin.clear();
-					cin.ignore(numeric_limits<streamsize>::max(), '\n');
-				}
-				foodProvided = (foodInput == 1);
+                while (!(cin >> searchId))
+                {
+                    if (cin.eof())
+                        return 0;
 
-				// Clear buffer before reading the string
-				cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    cin.clear();
+                    cin.ignore(
+                        numeric_limits<streamsize>::max(), '\n');
 
-				cout << "Enter Main Activity: ";
-				getline(cin, activity);
+                    cout << "Invalid input. "
+                         << "Please enter a valid Student ID: ";
+                }
 
-				newEvent = make_unique<SocialEvent>(eventId, capacity, name, description, date, time, location, foodProvided, activity);
-			}
-			else
-			{
-				cout << "Invalid Event Type selected.\n\n";
-			}
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-			// Pass ownership to EventManager
-			if (newEvent)
-			{
-				if (eventManager.addEvent(std::move(newEvent)))
-				{
-					cout << "Event successfully created and added!\n\n";
-				}
-				else
-				{
-					cout << "Failed to add event. An event with ID " << eventId << " may already exist.\n\n";
-				}
-			}
-		}
-		else if (choice == 4)
-		{
-			// View Events
-		}
-		else if (choice == 5)
-		{
-			// Search Events
-		}
-		else if (choice == 6)
-		{
-			// Register Student for Event
-		}
-		else if (choice == 7)
-		{
-			// Cancel Registration
-		}
-		else if (choice == 8)
-		{
-			// View Student Registrations
-		}
-		else if (choice == 9)
-		{
-			// View Event Attendees
-		}
-		else if (choice == 10)
-		{
-			// View Organizers
-		}
-		else if (choice == 11)
-		{
-			// System Reports
-		}
-	}
+                for (const auto& student : students)
+                {
+                    if (student.getId() == searchId)
+                    {
+                        cout << "Student Found:\n"
+                             << "ID: " << student.getId() << "\n"
+                             << "Name: " << student.getName() << "\n"
+                             << "Email: " << student.getEmail() << "\n"
+                             << "Major: " << student.getMajor() << "\n\n";
 
-	return 0;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    cout << "Student with ID " << searchId
+                         << " not found.\n\n";
+                }
+            }
+            else
+            {
+                cout << "All Students:\n";
+
+                for (const auto& student : students)
+                {
+                    cout << "ID: " << student.getId() << "\n"
+                         << "Name: " << student.getName() << "\n"
+                         << "Email: " << student.getEmail() << "\n"
+                         << "Major: " << student.getMajor() << "\n\n";
+                }
+
+                cout << '\n';
+            }
+        }
+        else if (choice == 3)
+        {
+            if (!createEventMenu(eventManager))
+                return 0;
+        }
+        else if (choice == 4)
+        {
+            if (!viewEventsMenu(eventManager))
+                return 0;
+        }
+        else if (choice == 5)
+        {
+            if (!searchEventsMenu(eventManager))
+                return 0;
+        }
+        else if (choice == 6)
+        {
+            // Register Student for Event
+        }
+        else if (choice == 7)
+        {
+            // Cancel Registration
+        }
+        else if (choice == 8)
+        {
+            // View Student Registrations
+        }
+        else if (choice == 9)
+        {
+            // View Event Attendees
+        }
+        else if (choice == 10)
+        {
+            // View Organizers
+        }
+        else if (choice == 11)
+        {
+            // System Reports
+        }
+    }
+
+    return 0;
 }
