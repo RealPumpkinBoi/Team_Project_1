@@ -285,8 +285,8 @@ int main()
             unsigned int id;
             bool idCheck = false;
 
-            vector<Student> students =
-                loadStudents("students.txt");
+            vector<Student> students;
+            FileManager::loadStudents(students);
 
             // Menu input has already consumed the newline.
             cout << "Enter Student Name: ";
@@ -351,8 +351,8 @@ int main()
         {
             int viewChoice = 0;
 
-            vector<Student> students =
-                loadStudents("students.txt");
+            vector<Student> students;
+            FileManager::loadStudents(students);
 
             cout << "1. Find by ID\n"
                 << "2. View All Students\n";
