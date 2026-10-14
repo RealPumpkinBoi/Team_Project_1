@@ -1,5 +1,8 @@
 #include "EventManager.h"
 #include "EventSystem.h"
+#include "AcademicEvent.h"
+#include "EventManager.h"
+#include "EventSystem.h"
 
 #include <cassert>
 #include <iostream>
