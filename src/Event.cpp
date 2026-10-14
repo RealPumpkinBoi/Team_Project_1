@@ -49,9 +49,15 @@ std::string Event::getLocation() const
 {
     return location;
 }
-std::string Event::getEventType() const {
+/* Since Event is an abstract class, we cannot provide a default implementation
+for getEventType() here.
+Each derived class must implement this method to specify its own event type.
+------------Commented out to avoid compilation errors - Start-----------------
+std::string Event::getEventType() const 
+{
     return "General";
 }
+------------Commented out to avoid compilation errors - End----------------*/
 
 void Event::displayDetails() const {
     std::cout << "Event ID: " << getEventId() << '\n'
