@@ -45,6 +45,19 @@ public:
     std::string getTime() const;
     std::string getLocation() const;
 
+    /* Crucial - Ensures proper derived class destructors are called*/
+    virtual ~Event() = default;
+
+
+    /* Pure virtual function - This is what enables the class to be abstract.
+    Essentially it acts as a "contract" telling derived classes
+    "This function has no implementation in base class, any derived class MUST
+    provide its own implementation to be instantiated. */
+    virtual std::string getEventType() const = 0;
+
+	//Output - Displays all the information of the even
+    virtual void displayDetails() const override;
+
 };
 
 #endif
