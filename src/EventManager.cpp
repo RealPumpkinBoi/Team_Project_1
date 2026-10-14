@@ -97,3 +97,7 @@ void EventManager::searchEventsByName(
         std::cout << "No matching events found.\n";
     }
 }
+
+const std::vector<std::unique_ptr<Event>>& EventManager::getEvents() const {
+    return events;
+}

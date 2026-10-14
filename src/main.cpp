@@ -296,7 +296,14 @@ int main()
 {
     // Keep the same event collection throughout the menu session.
     EventManager eventManager;
+    vector<Registration> registrations;
+    vector<Student> students = loadStudentsFromFile("students.txt");
     int choice = 12;
+
+    cout << "========================================\n"
+         << "     CAMPUS EVENT MANAGEMENT SYSTEM     \n"
+         << "========================================\n"
+         << endl;
 
     while (choice != 0)
     {
@@ -474,27 +481,356 @@ int main()
         }
         else if (choice == 6)
         {
-            // Register Student for Event
+           int studentID;
+           int eventID;
+
+           cout << "\n=== Register Student for Event ===\n";
+
+           if (!readEventNumber("Enter Student ID: ", studentID))
+               return 0;
+
+            if (!readEventNumber("Enter Event ID: ", eventID))
+                return 0;
+            
+            Student* selectedStudent = nullptr;
+
+            for (auto& student : students)
+            {
+                if (student.getId() == static_cast<unsigned int>(studentID))
+                {
+                    selectedStudent = &student;
+                    break;
+                }
+            }
+
+            if (selectedStudent == nullptr)
+            {
+                string registrationDate;
+
+                cout << "Student with ID " << studentID << " not found.\n";
+                return 0;
+            }
+
+            // Check if the event exists
+            Event* event = eventManager.findEventById(eventID);
+
+            if (event == nullptr)
+            {
+                cout << "Event with ID " << eventID << " not found.\n";
+                return 0;
+            }
+
+            string registrationDate;
+
+            if (!readEventText("Enter Registration Date (YYYY-MM-DD): ", registrationDate))
+            {
+                return 0;
+            }
+
+            registrations.emplace_back(selectedStudent, event, registrationDate);
+
+            cout << "Student with ID " << studentID
+                 << " successfully registered for Event ID "
+                 << eventID << ".\n\n";
         }
         else if (choice == 7)
         {
-            // Cancel Registration
+            int studentID;
+            int eventID;
+
+            bool found = false;
+
+            cout << "\n===== Cancel Registration =====\n";
+
+            if (!readEventNumber("Enter Student ID: ", studentID))
+                return 0;
+            
+            if (!readEventNumber("Enter Event ID: ", eventID))
+                return 0;
+
+            for (auto& registration : registrations)
+            {
+                Student* student = registration.getStudent();
+                Event* event = registration.getEvent();
+
+                if (student != nullptr && event != nullptr &&
+                    student->getId() == static_cast<unsigned int>(studentID) &&
+                    event->getEventId() == eventID &&
+                    registration.getStatus() == "Active") {
+
+                    registration.cancel();
+
+                    cout << "Registration cancelled successfully for Student ID"
+                         << studentID
+                         << "!\n\n";
+
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+            cout << "No active registration found for Student ID "
+                << studentID
+                << ".\n\n";
+            }
         }
+        
         else if (choice == 8)
         {
-            // View Student Registrations
+            int studentID;
+            bool found = false;
+
+            cout << "\n=== View Student Registrations ===\n";
+
+            if (!readEventNumber("Enter Student ID: ", studentID))
+                return 0;
+
+            cout << "\nRegistered Events:\n";
+
+            for (const auto& registration : registrations)
+            {
+                Student* student = registration.getStudent();
+                Event* event = registration.getEvent();
+
+                if (student != nullptr && event != nullptr &&
+                    student->getId() == static_cast<unsigned int>(studentID))
+                {
+                    cout << "Event ID: " << event->getEventId() << "\n"
+                         << "Event Name: " << event->getName() << "\n"
+                         << "Registration Date: "
+                         << registration.getRegistrationDate() << "\n"
+                         << "Status: " << registration.getStatus() << "\n\n";
+
+                    found = true;
+                }
+            }
+
+            if (!found)
+            {
+                cout << "No registrations found for Student ID "
+                     << studentID << ".\n\n";
+            }
+           
         }
         else if (choice == 9)
         {
-            // View Event Attendees
+            int eventID;
+
+            bool found = false;
+
+            cout << "\n=== View Event Attendees ===\n";
+
+            if (!readEventNumber("Enter Event ID: ", eventID))
+                return 0;
+
+            Event* event = eventManager.findEventById(eventID);
+
+            if (event == nullptr)
+            {
+                cout << "Event with ID " << eventID << " not found.\n";
+                return 0;
+            }
+
+            for (const auto& registration : registrations)
+            {
+                Event* registeredEvent = registration.getEvent();
+                Student* student = registration.getStudent();
+
+                if (student != nullptr && registeredEvent != nullptr &&
+                    registeredEvent->getEventId() == eventID)
+                {
+                    cout << "Student ID: " << student->getId() << "\n"
+                         << "Student Name: " << student->getName() << "\n"
+                         << "Registration Date: "
+                         << registration.getRegistrationDate() << "\n"
+                         << "Status: " << registration.getStatus() << "\n\n";
+
+                    found = true;
+                }
+            }
+
+            if (!found)
+            {
+                cout << "No attendees found for Event ID " << eventID << ".\n\n";
+            }
         }
         else if (choice == 10)
         {
-            // View Organizers
+            int viewOrganizerChoice;
+
+            cout << "\n===== View Organizers =====\n"
+                 << "1. Find Organizer by ID\n"
+                 << "2. View All Organizers\n";
+
+            if (!readInteger("Enter Selection: ", viewOrganizerChoice, 1, 2))
+                return 0;
+
+            if (viewOrganizerChoice == 1)
+            {
+                string organizerID;
+                bool found = false;
+
+                if (!readEventText("Enter Organizer ID: ", organizerID))
+                    return 0;
+
+                vector<Organizer> organizers =
+                    FileManager::loadOrganizersFromFile("organizers.txt");
+
+                for (const auto& organizer : organizers)
+                {
+                    if (organizer.getOrganizerID() == organizerID)
+                    {
+                        cout << "Organizer Found:\n"
+                             << "ID: " << organizer.getOrganizerID() << "\n"
+                             << "Name: " << organizer.getName() << "\n"
+                             << "Email: " << organizer.getEmail() << "\n\n"
+                             << "Department: " << organizer.getDepartment() << "\n\n";
+
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    cout << "Organizer with ID " << organizerID
+                         << " not found.\n\n";
+                }
+            }
+            else
+            {
+                vector<Organizer> organizers =
+                    FileManager::loadOrganizersFromFile("organizers.txt");
+
+                if (organizers.empty())
+                {
+                    cout << "No organizers found.\n\n";
+                    continue;
+                }
+
+                cout << "All Organizers:\n";
+
+                for (const auto& organizer : organizers)
+                {
+                    cout << "ID: " << organizer.getOrganizerID() << "\n"
+                         << "Name: " << organizer.getName() << "\n"
+                         << "Email: " << organizer.getEmail() << "\n\n";
+                }
+
+                cout << '\n';
+            }
         }
         else if (choice == 11)
         {
-            // System Reports
+            int ReportChoice;
+
+            cout << "\n===== System Reports =====\n"
+                 << "1. Event Report\n"
+                 << "2. Student Report\n"
+                 << "3. Registration Report\n";
+
+            if (!readInteger("Enter Selection: ", ReportChoice, 1, 3))
+                return 0;
+
+            if (ReportChoice == 1)
+            {
+                cout << "\n=== Event Report ===\n";
+
+                if (eventManager.getEvents().empty())
+                {
+                    cout << "No events available.\n\n";
+                }
+                else
+                {
+                    for (const auto& event : eventManager.getEvents())
+                    {
+                        int count = 0;
+
+                        for (const auto& registration : registrations)
+                        {
+                            Event* registeredEvent = registration.getEvent();
+
+                            if (registeredEvent != nullptr &&
+                                registeredEvent->getEventId() == event->getEventId())
+                            {
+                                count++;
+                            }
+                        }
+
+                        cout << "Event ID: " << event->getEventId() << "\n"
+                             << "Event Name: " << event->getName() << "\n"
+                             << "Capacity: " << event->getCapacity() << "\n"
+                             << "Remaining Seats: " << (event->getCapacity() - count) << "\n\n";
+                    }
+                }
+            }
+
+            else if (ReportChoice == 2)
+            {
+                cout << "\n=== Student Report ===\n";
+
+                vector<Student> students =
+                    loadStudentsFromFile("students.txt");
+
+                if (students.empty())
+                {
+                    cout << "No students available.\n\n";
+                }
+                else
+                {
+                    for (const auto& student : students)
+                    {
+                        int count = 0;
+
+                        for (const auto& registration : registrations)
+                        {
+                            Student* registeredStudent = registration.getStudent();
+
+                            if (registeredStudent != nullptr &&
+                                registeredStudent->getId() == student.getId() &&
+                                registration.getStatus() == "Active")
+                            {
+                                count++;
+                            }
+                        }
+
+                        cout << "Student ID: " << student.getId() << "\n"
+                             << "Name: " << student.getName() << "\n"
+                             << "Email: " << student.getEmail() << "\n"
+                             << "Major: " << student.getMajor() << "\n"
+                             << "Registered Events: " << count << "\n\n";
+                    }
+                }
+            }
+            else if (ReportChoice == 3)
+            {
+                cout << "\n=== Registration Report ===\n";
+
+                if (registrations.empty())
+                {
+                    cout << "No registrations available.\n\n";
+                }
+                else
+                {
+                    for (const auto& registration : registrations)
+                    {
+                        Student* student = registration.getStudent();
+                        Event* event = registration.getEvent();
+
+                        if (student != nullptr && event != nullptr)
+                        {
+                            cout << "Student ID: " << student->getId() << "\n"
+                                 << "Student Name: " << student->getName() << "\n"
+                                 << "Event ID: " << event->getEventId() << "\n"
+                                 << "Event Name: " << event->getName() << "\n"
+                                 << "Registration Date: "
+                                 << registration.getRegistrationDate() << "\n"
+                                 << "Status: " << registration.getStatus() << "\n\n";
+                        }
+                    }
+                }
+            }
         }
     }
 
