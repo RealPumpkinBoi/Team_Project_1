@@ -36,6 +36,6 @@ text files so nothing is lost.
 | Haneef Md | |
 | Pablo |  |
 | Morgan Saldana |  |
-| Caden |  |
+| Caden | Set up Student.h, Student.cpp, Student Registration, and the foundations for Main.cpp |
 
 
