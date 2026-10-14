@@ -21,7 +21,6 @@
 
 using namespace std;
 
-// Existing student file loader.
 vector<Student> loadStudentsFromFile(const string& filename)
 {
     vector<Student> students;
@@ -61,8 +60,13 @@ vector<Student> loadStudentsFromFile(const string& filename)
     return students;
 }
 
-// Read a positive integer using the entire input line.
-bool readEventNumber(const string& prompt, int& value)
+// Read an integer within an allowed range.
+// Rejects trailing text, overflow, and out-of-range values.
+bool readInteger(
+    const string& prompt,
+    int& value,
+    int minimum,
+    int maximum)
 {
     string line;
 
@@ -77,17 +81,24 @@ bool readEventNumber(const string& prompt, int& value)
         int number;
         char extra;
 
-        if ((input >> number) && !(input >> extra) && number > 0)
+        if ((input >> number) && !(input >> extra) &&
+            number >= minimum && number <= maximum)
         {
             value = number;
             return true;
         }
 
-        cout << "Please enter a positive whole number.\n";
+        cout << "Please enter a whole number from "
+             << minimum << " to " << maximum << ".\n";
     }
 }
 
-// Read a required text field.
+bool readEventNumber(const string& prompt, int& value)
+{
+    return readInteger(
+        prompt, value, 1, numeric_limits<int>::max());
+}
+
 bool readEventText(const string& prompt, string& value)
 {
     while (true)
@@ -104,38 +115,11 @@ bool readEventText(const string& prompt, string& value)
     }
 }
 
-// Read the main menu selection, including 0 for Exit.
-bool readMenuChoice(int& choice)
-{
-    string line;
-
-    while (true)
-    {
-        cout << "Enter Selection: ";
-
-        if (!getline(cin, line))
-            return false;
-
-        istringstream input(line);
-        int number;
-        char extra;
-
-        if ((input >> number) && !(input >> extra) &&
-            number >= 0 && number <= 11)
-        {
-            choice = number;
-            return true;
-        }
-
-        cout << "Please enter a whole number from 0 to 11.\n";
-    }
-}
-
 bool createEventMenu(EventManager& eventManager)
 {
-    int eventType;
     int eventId;
     int capacity;
+    int eventType;
 
     string name;
     string description;
@@ -143,23 +127,9 @@ bool createEventMenu(EventManager& eventManager)
     string time;
     string location;
 
-    cout << "\n=== Create Event ===\n"
-         << "1. Academic Event\n"
-         << "2. Club Event\n"
-         << "3. Career Event\n"
-         << "4. Social Event\n";
+    cout << "\n=== Create Event ===\n";
 
-    while (true)
-    {
-        if (!readEventNumber("Enter event type: ", eventType))
-            return false;
-
-        if (eventType <= 4)
-            break;
-
-        cout << "Please choose an event type from 1 to 4.\n";
-    }
-
+    // Collect the shared event information first.
     if (!readEventNumber("Enter Event ID: ", eventId))
         return false;
 
@@ -169,38 +139,47 @@ bool createEventMenu(EventManager& eventManager)
         return true;
     }
 
-    if (!readEventText("Event name: ", name))
+    if (!readEventNumber("Enter Event Capacity: ", capacity))
         return false;
 
-    if (!readEventText("Description: ", description))
+    if (!readEventText("Enter Event Name: ", name))
         return false;
 
-    if (!readEventText("Date (YYYY-MM-DD): ", date))
+    if (!readEventText("Enter Event Description: ", description))
         return false;
 
-    if (!readEventText("Time (HH:MM): ", time))
+    if (!readEventText("Enter Event Date (YYYY-MM-DD): ", date))
         return false;
 
-    if (!readEventText("Location: ", location))
+    if (!readEventText("Enter Event Time (HH:MM): ", time))
         return false;
 
-    if (!readEventNumber("Maximum capacity: ", capacity))
+    if (!readEventText("Enter Event Location: ", location))
         return false;
 
-    unique_ptr<Event> event;
+    cout << "\nSelect Event Type:\n"
+         << "1. Academic Event\n"
+         << "2. Club Event\n"
+         << "3. Career Event\n"
+         << "4. Social Event\n";
+
+    if (!readInteger("Enter Selection: ", eventType, 1, 4))
+        return false;
+
+    unique_ptr<Event> newEvent;
 
     if (eventType == 1)
     {
         string department;
         string speaker;
 
-        if (!readEventText("Department: ", department))
+        if (!readEventText("Enter Department: ", department))
             return false;
 
-        if (!readEventText("Speaker: ", speaker))
+        if (!readEventText("Enter Speaker: ", speaker))
             return false;
 
-        event = make_unique<AcademicEvent>(
+        newEvent = make_unique<AcademicEvent>(
             eventId, capacity, name, description,
             date, time, location, department, speaker);
     }
@@ -208,62 +187,60 @@ bool createEventMenu(EventManager& eventManager)
     {
         string clubName;
 
-        if (!readEventText("Club name: ", clubName))
+        if (!readEventText("Enter Club Name: ", clubName))
             return false;
 
-        event = make_unique<ClubEvent>(
+        newEvent = make_unique<ClubEvent>(
             eventId, capacity, name, description,
             date, time, location, clubName);
     }
     else if (eventType == 3)
     {
-        string companyName;
-        string recruiterName;
+        string company;
+        string recruiter;
 
-        if (!readEventText("Company name: ", companyName))
+        if (!readEventText("Enter Company Name: ", company))
             return false;
 
-        if (!readEventText("Recruiter name: ", recruiterName))
+        if (!readEventText("Enter Recruiter Name: ", recruiter))
             return false;
 
-        event = make_unique<CareerEvent>(
+        newEvent = make_unique<CareerEvent>(
             eventId, capacity, name, description,
-            date, time, location, companyName, recruiterName);
+            date, time, location, company, recruiter);
     }
     else
     {
-        int foodChoice;
-        string mainActivity;
+        int foodInput;
+        string activity;
 
-        cout << "Food provided:\n"
-             << "1. Yes\n"
-             << "2. No\n";
-
-        while (true)
+        if (!readInteger(
+                "Is food provided? (1 for Yes, 0 for No): ",
+                foodInput, 0, 1))
         {
-            if (!readEventNumber("Enter Selection: ", foodChoice))
-                return false;
-
-            if (foodChoice <= 2)
-                break;
-
-            cout << "Please choose 1 for Yes or 2 for No.\n";
+            return false;
         }
 
-        if (!readEventText("Main activity: ", mainActivity))
+        if (!readEventText("Enter Main Activity: ", activity))
             return false;
 
-        bool providesFood = (foodChoice == 1);
+        bool foodProvided = (foodInput == 1);
 
-        event = make_unique<SocialEvent>(
+        newEvent = make_unique<SocialEvent>(
             eventId, capacity, name, description,
-            date, time, location, providesFood, mainActivity);
+            date, time, location, foodProvided, activity);
     }
 
-    if (eventManager.addEvent(std::move(event)))
-        cout << "Event successfully created.\n\n";
+    // Pass ownership to the shared event collection.
+    if (eventManager.addEvent(std::move(newEvent)))
+    {
+        cout << "Event successfully created and added!\n\n";
+    }
     else
-        cout << "Event could not be added.\n\n";
+    {
+        cout << "Failed to add event. An event with ID "
+             << eventId << " may already exist.\n\n";
+    }
 
     return true;
 }
@@ -276,7 +253,7 @@ bool viewEventsMenu(const EventManager& eventManager)
          << "1. Find Event by ID\n"
          << "2. View All Events\n";
 
-    if (!readEventNumber("Enter Selection: ", viewChoice))
+    if (!readInteger("Enter Selection: ", viewChoice, 1, 2))
         return false;
 
     if (viewChoice == 1)
@@ -288,13 +265,9 @@ bool viewEventsMenu(const EventManager& eventManager)
 
         eventManager.displayEvent(eventId);
     }
-    else if (viewChoice == 2)
-    {
-        eventManager.displayAllEvents();
-    }
     else
     {
-        cout << "Invalid selection.\n";
+        eventManager.displayAllEvents();
     }
 
     cout << '\n';
@@ -314,14 +287,14 @@ bool searchEventsMenu(const EventManager& eventManager)
     }
 
     eventManager.searchEventsByName(keyword);
-
     cout << '\n';
+
     return true;
 }
 
 int main()
 {
-    // One collection shared by Create, View, and Search.
+    // Keep the same event collection throughout the menu session.
     EventManager eventManager;
     int choice = 12;
 
@@ -340,7 +313,7 @@ int main()
              << "11. System Reports\n"
              << "0. Exit\n\n";
 
-        if (!readMenuChoice(choice))
+        if (!readInteger("Enter Selection: ", choice, 0, 11))
             break;
 
         if (choice == 1)
@@ -354,6 +327,7 @@ int main()
             vector<Student> students =
                 loadStudentsFromFile("students.txt");
 
+            // Menu input has already consumed the newline.
             cout << "Enter Student Name: ";
             if (!getline(cin, name))
                 return 0;
@@ -420,31 +394,10 @@ int main()
                 loadStudentsFromFile("students.txt");
 
             cout << "1. Find by ID\n"
-                 << "2. View All Students\n"
-                 << "Enter Selection: ";
+                 << "2. View All Students\n";
 
-            while (true)
-            {
-                if (cin >> viewChoice)
-                {
-                    cin.ignore(
-                        numeric_limits<streamsize>::max(), '\n');
-
-                    if (viewChoice >= 1 && viewChoice <= 2)
-                        break;
-                }
-                else
-                {
-                    if (cin.eof())
-                        return 0;
-
-                    cin.clear();
-                    cin.ignore(
-                        numeric_limits<streamsize>::max(), '\n');
-                }
-
-                cout << "Invalid selection.\nEnter Selection: ";
-            }
+            if (!readInteger("Enter Selection: ", viewChoice, 1, 2))
+                return 0;
 
             if (viewChoice == 1)
             {
