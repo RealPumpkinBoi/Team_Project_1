@@ -1,5 +1,7 @@
 #include "EventManager.h"
 #include "EventSystem.h"
+#include "AcademicEvent.h"
+
 
 #include <cassert>
 #include <iostream>
@@ -9,21 +11,23 @@ int main() {
     EventManager manager;
     EventSystem registrations;
 
-    bool added = manager.addEvent(std::make_unique<Event>(
+    bool added = manager.addEvent(std::make_unique<AcademicEvent>(
         101, 30,
         "Introduction to Robotics",
         "Learn robotics basics.",
         "2026-10-15", "14:00",
-        "Engineering Building 201"
+        "Engineering Building 201",
+        "Engineering", "Dr. Smith"
     ));
     assert(added);
 
-    bool duplicateAdded = manager.addEvent(std::make_unique<Event>(
+    bool duplicateAdded = manager.addEvent(std::make_unique<AcademicEvent>(
         101, 20,
         "Duplicate Event",
         "Should not be added.",
         "2026-10-16", "10:00",
-        "Room 101"
+        "Room 101",
+        "Engineering", "Dr. Smith"
     ));
     assert(!duplicateAdded);
 
