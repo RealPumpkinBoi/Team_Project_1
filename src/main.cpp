@@ -9,6 +9,7 @@
 #include "Organizer.h"
 #include "FileManager.h"
 #include "EventSystem.h"
+#include "EventManager.h"
 #include "Event.h"
 #include "ClubEvent.h"
 #include "CareerEvent.h"
@@ -46,6 +47,9 @@ vector<Student> loadStudentsFromFile(const string& filename)
 
 int main()
 {
+	//Create an instance of EventManager
+	EventManager eventManager;
+
 	int choice = 12;
 	while (choice > 0)
 	{
@@ -184,7 +188,135 @@ int main()
 		}
 		else if (choice == 3)
 		{
-			// Create Event
+			// Base Event variables
+			int eventId;
+			int	capacity;
+			string name;
+			string description;
+			string  date;
+			string time; 
+			string location;
+
+			cout << "Enter Event ID: ";
+			while (!(cin >> eventId))
+			{
+				cout << "Invalid input. Please enter a valid Event ID: ";
+				cin.clear();
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			}
+
+			cout << "Enter Event Capacity: ";
+			while (!(cin >> capacity))
+			{
+				cout << "Invalid input. Please enter a valid Capacity: ";
+				cin.clear();
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			}
+
+			// Clear buffer before reading strings
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+			cout << "Enter Event Name: ";
+			getline(cin, name);
+
+			cout << "Enter Event Description: ";
+			getline(cin, description);
+
+			cout << "Enter Event Date: ";
+			getline(cin, date);
+
+			cout << "Enter Event Time: ";
+			getline(cin, time);
+
+			cout << "Enter Event Location: ";
+			getline(cin, location);
+
+			/*With base information collected, now we can ask for the derived
+			class information based on the event type*/
+
+			// Determine Derived Event Type
+			int eventType = 0;
+			cout << "\nSelect Event Type:\n"
+				<< "1. Academic Event\n"
+				<< "2. Club Event\n"
+				<< "3. Career Event\n"
+				<< "4. Social Event\n"
+				<< "Enter Selection: ";
+			cin >> eventType;
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+			std::unique_ptr<Event> newEvent = nullptr;
+
+			if (eventType == 1)
+			{
+				string department;
+				string speaker;
+				cout << "Enter Department: ";
+				getline(cin, department);
+				cout << "Enter Speaker: ";
+				getline(cin, speaker);
+				// Create AcademicEvent and assign to newEvent
+				newEvent = make_unique<AcademicEvent>(eventId, capacity, name, description, date, time, location, department, speaker);
+			}
+			else if (eventType == 2)
+			{
+				string clubName;
+				cout << "Enter Club Name: ";
+				getline(cin, clubName);
+				// Create ClubEvent and assign to newEvent
+				newEvent = make_unique<ClubEvent>(eventId, capacity, name, description, date, time, location, clubName);
+			}
+			else if (eventType == 3)
+			{
+				string company;
+				string recruiter;
+				cout << "Enter Company Name: ";
+				getline(cin, company);
+				cout << "Enter Recruiter Name: ";
+				getline(cin, recruiter);
+				// Create CareerEvent and assign to newEvent
+				newEvent = make_unique<CareerEvent>(eventId, capacity, name, description, date, time, location, company, recruiter);
+			}
+			else if (eventType == 4)
+			{
+				int foodInput;
+				bool foodProvided;
+				string activity;
+
+				cout << "Is food provided? (1 for Yes, 0 for No): ";
+				while (!(cin >> foodInput) || (foodInput != 0 && foodInput != 1))
+				{
+					cout << "Invalid input. Please enter 1 for Yes or 0 for No: ";
+					cin.clear();
+					cin.ignore(numeric_limits<streamsize>::max(), '\n');
+				}
+				foodProvided = (foodInput == 1);
+
+				// Clear buffer before reading the string
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+				cout << "Enter Main Activity: ";
+				getline(cin, activity);
+
+				newEvent = make_unique<SocialEvent>(eventId, capacity, name, description, date, time, location, foodProvided, activity);
+			}
+			else
+			{
+				cout << "Invalid Event Type selected.\n\n";
+			}
+
+			// Pass ownership to EventManager
+			if (newEvent)
+			{
+				if (eventManager.addEvent(std::move(newEvent)))
+				{
+					cout << "Event successfully created and added!\n\n";
+				}
+				else
+				{
+					cout << "Failed to add event. An event with ID " << eventId << " may already exist.\n\n";
+				}
+			}
 		}
 		else if (choice == 4)
 		{
