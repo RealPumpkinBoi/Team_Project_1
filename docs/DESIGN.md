@@ -24,7 +24,7 @@ text files so nothing is lost.
 | `Registration` | Says "this student is signed up for this event", plus the date and whether it's still active or cancelled. |
 | `EventManager` | Keeps the list of all events. Adds, finds, shows and searches them. |
 | `EventSystem` | Keeps the list of all sign-ups. Signs students up, cancels, and shows who's going where. |
-| `FileManager` | TODO: saves and loads everything from files. |
+| `FileManager` | saves and loads everything from files. |
 
 ## Who did what
 
