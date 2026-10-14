@@ -11,12 +11,13 @@ int main() {
     EventManager manager;
     EventSystem registrations;
 
-    bool added = manager.addEvent(std::make_unique<AcademixEvent>(
+    bool added = manager.addEvent(std::make_unique<AcademicEvent>(
         101, 30,
         "Introduction to Robotics",
         "Learn robotics basics.",
         "2026-10-15", "14:00",
-        "Engineering Building 201"
+        "Engineering Building 201",
+        "Engineering", "Dr. Smith"
     ));
     assert(added);
 
@@ -25,7 +26,8 @@ int main() {
         "Duplicate Event",
         "Should not be added.",
         "2026-10-16", "10:00",
-        "Room 101"
+        "Room 101",
+        "Engineering", "Dr. Smith"
     ));
     assert(!duplicateAdded);
 
