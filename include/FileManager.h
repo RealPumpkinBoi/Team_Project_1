@@ -13,6 +13,7 @@ class FileManager {
 
 public:
     static void saveStudents(const std::vector<Student>& students);
+	static void saveStudent(const Student student);
     static void loadStudents(std::vector<Student>& students);
 };
 
