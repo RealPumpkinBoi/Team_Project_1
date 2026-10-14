@@ -20,6 +20,8 @@ public:
     void displayEvent(int eventId) const;
     void displayAllEvents() const;
     void searchEventsByName(const std::string& keyword) const;
+
+    const std::vector<std::unique_ptr<Event>>& getEvents() const;
 };
 
 #endif
