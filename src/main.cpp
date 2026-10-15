@@ -21,6 +21,77 @@
 #include "SocialEvent.h"
 
 using namespace std;
+//Two helper functions to read and validate date and time inputs
+//#1 Validates that the date is in the format YYYY-MM-DD and that the year, month, and day are within reasonable ranges.
+bool readEventDate(const string& prompt, string& value)
+{
+    while (true)
+    {
+        cout << prompt;
+        if (!getline(cin, value))
+            return false;
+
+        // Check exact length and dash positions
+        if (value.length() == 10 && value[4] == '-' && value[7] == '-')
+        {
+            bool allDigits = true;
+            for (int i = 0; i < 10; ++i)
+            {
+                if (i == 4 || i == 7) continue;
+                if (!isdigit(value[i])) allDigits = false;
+            }
+
+            if (allDigits)
+            {
+                // Safely convert to integers since we confirmed they are digits
+                int year = stoi(value.substr(0, 4));
+                int month = stoi(value.substr(5, 2));
+                int day = stoi(value.substr(8, 2));
+
+                if (year >= 1900 && year <= 2100 &&
+                    month >= 1 && month <= 12 &&
+                    day >= 1 && day <= 31)
+                {
+                    return true;
+                }
+            }
+        }
+        cout << "Invalid date. Please use YYYY-MM-DD format with valid numbers.\n";
+    }
+}
+//#2 Validates that the time is in the format HH:MM (24-hour) and that the hour and minute are within valid ranges.
+bool readEventTime(const string& prompt, string& value)
+{
+    while (true)
+    {
+        cout << prompt;
+        if (!getline(cin, value))
+            return false;
+
+        // Check exact length and colon position
+        if (value.length() == 5 && value[2] == ':')
+        {
+            bool allDigits = true;
+            for (int i = 0; i < 5; ++i)
+            {
+                if (i == 2) continue;
+                if (!isdigit(value[i])) allDigits = false;
+            }
+
+            if (allDigits)
+            {
+                int hour = stoi(value.substr(0, 2));
+                int minute = stoi(value.substr(3, 2));
+
+                if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59)
+                {
+                    return true;
+                }
+            }
+        }
+        cout << "Invalid time. Please use HH:MM (24-hour) format.\n";
+    }
+}
 
 vector<Student> loadStudentsFromFile(const string& filename)
 {
@@ -149,10 +220,10 @@ bool createEventMenu(EventManager& eventManager)
     if (!readEventText("Enter Event Description: ", description))
         return false;
 
-    if (!readEventText("Enter Event Date (YYYY-MM-DD): ", date))
+    if (!readEventDate("Enter Event Date (YYYY-MM-DD): ", date))
         return false;
 
-    if (!readEventText("Enter Event Time (HH:MM): ", time))
+    if (!readEventTime("Enter Event Time (HH:MM): ", time))
         return false;
 
     if (!readEventText("Enter Event Location: ", location))
@@ -347,7 +418,7 @@ bool registerStudentMenu(deque<Student>& students,
         return true;
     }
 
-    if (!readEventText("Enter Registration Date (YYYY-MM-DD): ", registrationDate))
+    if (!readEventDate("Enter Registration Date (YYYY-MM-DD): ", registrationDate))
         return false;
 
     eventSystem.registerStudent(student, event, registrationDate);
