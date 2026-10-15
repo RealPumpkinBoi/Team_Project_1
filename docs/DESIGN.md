@@ -174,6 +174,6 @@ A shared format and centralized persistence strategy are needed to ensure that s
 | Marina Tribolet  | Registration system implementation, including duplicate registration prevention, capacity validation, cancellation, and registration lookup methods. |
 | Michelle         | To be confirmed.                                                                                                                                     |
 | Haneef Md        | To be confirmed.                                                                                                                                     |
-| Pablo            | To be confirmed.                                                                                                                                     |
+| Pablo            | Worked on menu option 3, Event(.cpp and .h), SocialEvent(.cpp/.h), adjusted other event classes for abstract integration. confirmed.                                                                                                                                     |
 | Morgan Saldana   | To be confirmed.                                                                                                                                     |
 | Caden            | Student model, student registration functionality, and initial main menu implementation.                                                             |
