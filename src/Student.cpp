@@ -1,49 +1,26 @@
 #include "Student.h"
 
-#include <iostream>
-#include <string>
-
-Student::Student(const std::string& name, 
-                 const std::string& id, 
-                 const std::string& email, 
-                 const std::string& major)
-        : studentName(name), studentID(id), studentEmail(email), studentMajor(major) {}
-
-Student::~Student() {}
-
-// Getters
-std::string Student::getName() const {
-    return studentName;
-}
-std::string Student::getId() const {
-    return studentID;
-}
-std::string Student::getEmail() const {
-    return studentEmail;
-}
-std::string Student::getMajor() const {
-    return studentMajor;
+Student::Student(const std::string& name, const std::string& email, const std::string& major, unsigned int id)
+{
+	studentName = name;
+	this->email = email;
+	this->major = major;
+	this->id = id;
 }
 
-// Setters
-void Student::setName(const std::string& name) {
-    studentName = name;
+std::string Student::getName() const
+{
+	return studentName;
 }
-void Student::setId(const std::string& id) {
-    studentID = id;
+std::string Student::getEmail() const
+{
+	return email;
 }
-void Student::setEmail(const std::string& email) {
-    studentEmail = email;
+std::string Student::getMajor() const
+{
+	return major;
 }
-void Student::setMajor(const std::string& major) {
-    studentMajor = major;
+unsigned int Student::getId() const
+{
+	return id;
 }
-
-// Display
-void Student::displayStudentDetails() const {
-    std::cout << "Student Name: " << studentName << std::endl;
-    std::cout << "Student ID: " << studentID << std::endl;
-    std::cout << "Student Email: " << studentEmail << std::endl;
-    std::cout << "Student Major: " << studentMajor << std::endl;
-}
-

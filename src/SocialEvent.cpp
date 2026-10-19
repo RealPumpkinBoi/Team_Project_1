@@ -1,37 +1,34 @@
 #include "SocialEvent.h"
 
 #include <iostream>
-#include <string>
 
-int main() {
+// Call the base Event constructor in the initializer list, then initialize derived members
+SocialEvent::SocialEvent(int id,                     // ID
+                         int cap,                    // Capacity
+                         const std::string& n,       // Name
+                         const std::string& desc,    // Description
+                         const std::string& d,       // Date
+                         const std::string& t,       // Time
+                         const std::string& loc,     // Location
+                         bool food,                  // Indicates if food is provided
+                         const std::string& activity // Main activity for the social event
+                        )
+    : Event(id, cap, n, desc, d, t, loc), providesFood(food), mainActivity(activity)
+{
+}
 
-private:
-    std::string type;
+// Implementing the pure virtual function
+std::string SocialEvent::getEventType() const
+{
+    return "Networking Day";
+}
 
-public: 
-    SocialEvent(const std::string& name;
-                const std:string& id;
-                const std::string& date;
-                const std::string& location;
-                const std::string& description;
-                int capacity;
-                const std::string& type)
-    : Event(name, id, date, location, description, capacity), type(type) {}
+void SocialEvent::displayDetails() const
+{
+    // 1. Call the base class method to print ID, Name, Date, Capacity, etc.
+    Event::displayDetails();
 
-    // Getters
-    std::string getType() const {
-        return type;
-    
-    // Setters
-    void setType (const std::string& type) {
-        this->type = type;
-    }
-
-    // Display
-    void displayEventDetails() const {
-        Event::displayEventDetails();
-        std::cout << "Type: " << type << std::endl;
-        
-
-
+    // 2. Print the unique details for this specific derived class
+    std::cout << "Food Provided: " << (providesFood ? "Yes" : "No") << '\n'
+              << "Main Activity: " << mainActivity << '\n';
 }
