@@ -1,3 +1,4 @@
+
 #ifndef ACADEMIC_EVENT_H
 #define ACADEMIC_EVENT_H
 

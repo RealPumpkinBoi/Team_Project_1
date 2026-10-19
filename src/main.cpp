@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -49,12 +50,24 @@ bool readEventDate(const string& prompt, string& value)
                 int day = stoi(value.substr(8, 2));
 
                 if (year >= 1900 && year <= 2100 &&
-                    month >= 1 && month <= 12 &&
-                    day >= 1 && day <= 31)
-                {
-                    return true;
+                    month >= 1 && month <= 12) {
+                        int daysOfMonth[] = {
+                            31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+                        };
+
+                        // Checking for leap years
+
+                        if (year % 400 == 0 || (year % 4 == 0 && year % 100 != 0)) {
+                            daysOfMonth[1] = 29;
+                        }
+
+                        //Validating day of the month
+
+                        if (day >= 1 && day <= daysOfMonth[month - 1]) {
+                            return true;
+                        }
                 }
-            }
+            }          
         }
         cout << "Invalid date. Please use YYYY-MM-DD format with valid numbers.\n";
     }
@@ -421,11 +434,14 @@ bool registerStudentMenu(deque<Student>& students,
     if (!readEventDate("Enter Registration Date (YYYY-MM-DD): ", registrationDate))
         return false;
 
-    eventSystem.registerStudent(student, event, registrationDate);
-
-    cout << "Registration successful!\n"
+    if (eventSystem.registerStudent(student, event, registrationDate)) {
+        cout << "Registration successful!\n"
          << "Student: " << student->getName() << '\n'
          << "Event: " << event->getName() << "\n\n";
+    }
+    else {
+        cout << "Registration failed.\n\n";
+    }
 
     return true;
 }
@@ -739,3 +755,4 @@ int main()
 
     return 0;
 }
+
