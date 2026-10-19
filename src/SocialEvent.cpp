@@ -1,37 +1,35 @@
+
 #include "SocialEvent.h"
-
 #include <iostream>
-#include <string>
 
-int main() {
+// Constructor
+SocialEvent::SocialEvent(int id,
+                         int cap,
+                         const std::string& n,
+                         const std::string& desc,
+                         const std::string& d,
+                         const std::string& t,
+                         const std::string& loc,
+                         bool food,
+                         const std::string& activity)
+    : Event(id, cap, n, desc, d, t, loc),
+      providesFood(food),
+      mainActivity(activity)
+{
+}
 
-private:
-    std::string type;
+// Return event type
+std::string SocialEvent::getEventType() const
+{
+    return "Networking Day";
+}
 
-public: 
-    SocialEvent(const std::string& name;
-                const std:string& id;
-                const std::string& date;
-                const std::string& location;
-                const std::string& description;
-                int capacity;
-                const std::string& type)
-    : Event(name, id, date, location, description, capacity), type(type) {}
+// Display event details
+void SocialEvent::displayDetails() const
+{
+    Event::displayDetails();
 
-    // Getters
-    std::string getType() const {
-        return type;
-    
-    // Setters
-    void setType (const std::string& type) {
-        this->type = type;
-    }
-
-    // Display
-    void displayEventDetails() const {
-        Event::displayEventDetails();
-        std::cout << "Type: " << type << std::endl;
-        
-
-
+    std::cout << "Food Provided: "
+              << (providesFood ? "Yes" : "No") << '\n'
+              << "Main Activity: " << mainActivity << '\n';
 }

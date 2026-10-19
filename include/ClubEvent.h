@@ -1,32 +1,30 @@
+
 #ifndef CLUB_EVENT_H
 #define CLUB_EVENT_H
 
 #include "Event.h"
+#include <string>
 
 class ClubEvent : public Event {
-
 private:
     std::string clubName;
-    
+
 public:
+    ClubEvent(
+        int eventId,
+        int capacity,
+        const std::string& name,
+        const std::string& description,
+        const std::string& date,
+        const std::string& time,
+        const std::string& location,
+        const std::string& clubName
+    );
 
-    // Constructor
-    ClubEvent(const std::string& name,
-              const std::string& id,
-              const std::string& date,
-              const std::string& location,
-              const std::string& description,
-              int capacity,
-              const std::string& clubName); 
-    
-    // Getters
-    std::string getClubName() const;
+    const std::string& getClubName() const;
 
-    // Setters
-    void setClubName(const std::string& clubName);
-
-    // Display
+    std::string getEventType() const override;
     void displayDetails() const override;
 };
 
-#endif // CLUB_EVENT_H
+#endif

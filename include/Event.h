@@ -56,8 +56,8 @@ public:
     virtual std::string getEventType() const = 0;
 
 	//Output - Displays all the information of the even
-    virtual void displayDetails() const override;
 
+    virtual void displayDetails() const;
 };
 
 #endif
