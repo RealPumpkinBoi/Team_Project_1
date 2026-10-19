@@ -49,12 +49,24 @@ bool readEventDate(const string& prompt, string& value)
                 int day = stoi(value.substr(8, 2));
 
                 if (year >= 1900 && year <= 2100 &&
-                    month >= 1 && month <= 12 &&
-                    day >= 1 && day <= 31)
-                {
-                    return true;
+                    month >= 1 && month <= 12) {
+                        int daysOfMonth[] = {
+                            31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+                        };
+
+                        // Checking for leap years
+
+                        if (year % 400 == 0 || (year % 4 == 0 && year % 100 != 0)) {
+                            daysOfMonth[1] = 29;
+                        }
+
+                        //Validating day of the month
+
+                        if (day >= 1 && day <= daysOfMonth[month - 1]) {
+                            return true;
+                        }
                 }
-            }
+            }          
         }
         cout << "Invalid date. Please use YYYY-MM-DD format with valid numbers.\n";
     }
@@ -421,11 +433,14 @@ bool registerStudentMenu(deque<Student>& students,
     if (!readEventDate("Enter Registration Date (YYYY-MM-DD): ", registrationDate))
         return false;
 
-    eventSystem.registerStudent(student, event, registrationDate);
-
-    cout << "Registration successful!\n"
+    if (eventSystem.registerStudent(student, event, registrationDate)) {
+        cout << "Registration successful!\n"
          << "Student: " << student->getName() << '\n'
          << "Event: " << event->getName() << "\n\n";
+    }
+    else {
+        cout << "Registration failed.\n\n";
+    }
 
     return true;
 }
@@ -522,11 +537,100 @@ bool viewEventAttendeesMenu(EventManager& eventManager,
     return true;
 }
 
+bool organizerMenu (vector<Organizer>& organizers) {
+    int choice;
+
+    cout << "\n=== Organizer Management ===\n"
+         << "1. Add Organizer\n"
+         << "2. Find Organizer by ID\n"
+         << "3. View All Organizers\n"
+         << "0. Return to Main Menu\n";
+
+    if (!readInteger("Enter Selection: ", choice, 0, 3))
+        return false;
+    
+    if (choice == 1) {
+
+        string id;
+        string name;
+        string email;
+        string department;
+
+        if (!readEventText("Enter Organizer ID: ", id))
+            return false;
+
+        for (const Organizer& organizer : organizers) {
+
+            if (organizer.getOrganizerID() == id) {
+
+                cout << "Organizer ID already exists.\n";
+                
+                return true;
+            }
+        }
+
+        if (!readEventText("Enter Organizer Name: ", name))
+            return false;
+
+        if (!readEventText("Enter Organizer Email: ", email))                return false;
+
+        if (!readEventText("Enter Department: ", department))
+            return false;
+
+        organizers.emplace_back(id, name, email, department);
+
+        cout << "Organizer successfully added!\n";
+        
+    }
+
+    else if (choice == 2) {
+        string id;
+
+        if (!readEventText("Enter Organizer ID: ", id))
+            return false;
+
+        bool found = false;
+
+        for (const Organizer& organizer : organizers) {
+
+            if (organizer.getOrganizerID() == id) {
+
+                organizer.display();
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+            cout << "Organizer not found.\n";
+    }
+
+    else if (choice == 3) {
+
+        if (organizers.empty()) {
+            cout << "No organizers available.\n";
+        }
+
+        else {
+            for (const Organizer& organizer : organizers) {
+
+                organizer.display();
+            }
+        }
+    }
+
+    cout << '\n';
+
+    return true;
+}
+
 int main()
 {
     // Keep the same event collection throughout the menu session.
     EventManager eventManager;
     EventSystem eventSystem;
+
+    vector<Organizer> organizers;
 
     // deque keeps each Student at the same address when new ones are added,
     // so the Student* pointers stored in registrations stay valid.
@@ -729,7 +833,8 @@ int main()
         }
         else if (choice == 10)
         {
-            // View Organizers
+            if (!organizerMenu(organizers))
+                return 0;
         }
         else if (choice == 11)
         {

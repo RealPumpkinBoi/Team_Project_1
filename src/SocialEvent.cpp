@@ -1,4 +1,5 @@
 #include "SocialEvent.h"
+
 #include <iostream>
 
 // Call the base Event constructor in the initializer list, then initialize derived members
@@ -15,7 +16,6 @@ SocialEvent::SocialEvent(int id,                     // ID
     : Event(id, cap, n, desc, d, t, loc), providesFood(food), mainActivity(activity)
 {
 }
-
 
 // Implementing the pure virtual function
 std::string SocialEvent::getEventType() const

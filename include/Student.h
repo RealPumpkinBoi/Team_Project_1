@@ -1,3 +1,4 @@
+
 #ifndef Student_H
 #define Student_H
 
@@ -7,22 +8,23 @@
 class Student
 {
 private:
-	std::string studentName;
-	std::string email;
-	std::string major;
-	unsigned int id;
+    std::string studentName;
+    std::string email;
+    std::string major;
+    unsigned int id;
+
 public:
-	// Constructor
-	Student(const std::string& name, const std::string& email, const std::string& major, unsigned int id);
+    // Constructor
+    Student(const std::string& name,
+            const std::string& email,
+            const std::string& major,
+            unsigned int id);
 
-	// Getters
-	std::string getName() const;
-	std::string getEmail() const;
-	std::string getMajor() const;
-	unsigned int getId() const;
-
-
-
+    // Getters
+    std::string getName() const;
+    std::string getEmail() const;
+    std::string getMajor() const;
+    unsigned int getId() const;
 };
 
 #endif
