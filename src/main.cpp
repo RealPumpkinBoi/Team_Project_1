@@ -537,11 +537,100 @@ bool viewEventAttendeesMenu(EventManager& eventManager,
     return true;
 }
 
+bool organizerMenu (vector<Organizer>& organizers) {
+    int choice;
+
+    cout << "\n=== Organizer Management ===\n"
+         << "1. Add Organizer\n"
+         << "2. Find Organizer by ID\n"
+         << "3. View All Organizers\n"
+         << "0. Return to Main Menu\n";
+
+    if (!readInteger("Enter Selection: ", choice, 0, 3))
+        return false;
+    
+    if (choice == 1) {
+
+        string id;
+        string name;
+        string email;
+        string department;
+
+        if (!readEventText("Enter Organizer ID: ", id))
+            return false;
+
+        for (const Organizer& organizer : organizers) {
+
+            if (organizer.getOrganizerID() == id) {
+
+                cout << "Organizer ID already exists.\n";
+                
+                return true;
+            }
+        }
+
+        if (!readEventText("Enter Organizer Name: ", name))
+            return false;
+
+        if (!readEventText("Enter Organizer Email: ", email))                return false;
+
+        if (!readEventText("Enter Department: ", department))
+            return false;
+
+        organizers.emplace_back(id, name, email, department);
+
+        cout << "Organizer successfully added!\n";
+        
+    }
+
+    else if (choice == 2) {
+        string id;
+
+        if (!readEventText("Enter Organizer ID: ", id))
+            return false;
+
+        bool found = false;
+
+        for (const Organizer& organizer : organizers) {
+
+            if (organizer.getOrganizerID() == id) {
+
+                organizer.display();
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+            cout << "Organizer not found.\n";
+    }
+
+    else if (choice == 3) {
+
+        if (organizers.empty()) {
+            cout << "No organizers available.\n";
+        }
+
+        else {
+            for (const Organizer& organizer : organizers) {
+
+                organizer.display();
+            }
+        }
+    }
+
+    cout << '\n';
+
+    return true;
+}
+
 int main()
 {
     // Keep the same event collection throughout the menu session.
     EventManager eventManager;
     EventSystem eventSystem;
+
+    vector<Organizer> organizers;
 
     // deque keeps each Student at the same address when new ones are added,
     // so the Student* pointers stored in registrations stay valid.
@@ -744,7 +833,8 @@ int main()
         }
         else if (choice == 10)
         {
-            // View Organizers
+            if (!organizerMenu(organizers))
+                return 0;
         }
         else if (choice == 11)
         {
