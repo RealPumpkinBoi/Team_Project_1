@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 
-The Campus Event Management System is a console-based C++ application developed as a team project for Object-Oriented Programming.
+The Campus Event Management System is a terminal based C++ application developed as a team project for Object Oriented Programming.
 
 The system allows users to manage students, create and search campus events, manage organizers, and register students for events.
 
